@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  password        String
+  name            String?
+  globalRole      String         @default("STUDENT") // STUDENT, FACULTY, SUPER_ADMIN
+  enrollmentNumber String?
+  branch          String?
+  phoneNumber     String?
+  linkedin        String?
+  github          String?
+  skills          String?        // Stored as JSON string or comma-separated
+  profileLocked   Boolean        @default(false)
+  clubMemberships ClubMember[]
+  registrations   Registration[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Club {
+  id                    String        @id @default(uuid())
+  name                  String
+  category              String
+  themeColor            String?
+  subdomain             String?       @unique
+  tagline               String?
+  description           String?
+  logoUrl               String?
+  bannerUrl             String?
+  facultyCoordinatorId  String?
+  isFrozen              Boolean       @default(false)
+  recruitmentActive     Boolean       @default(false)
+  defaultUpiQrUrl       String?
+  customSections        String?       // JSON
+  quotations            String?       // JSON
+  paymentGatewayConfig  String?       // JSON
+  leadership            String?       // JSON
+  achievements          Achievement[]
+  events                Event[]
+  members               ClubMember[]
+  applicants            Applicant[]
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+}
+
+model ClubMember {
+  id        String   @id @default(uuid())
+  userId    String
+  clubId    String
+  role      String   // MEMBER, LEAD, etc.
+  user      User     @relation(fields: [userId], references: [id])
+  club      Club     @relation(fields: [clubId], references: [id])
+  joinedAt  DateTime @default(now())
+
+  @@unique([userId, clubId])
+}
+
+model Event {
+  id          String         @id @default(uuid())
+  clubId      String
+  title       String
+  description String?
+  type        String
+  fee         Float          @default(0)
+  status      String         @default("Pending")
+  date        DateTime
+  upiQrUrl    String?
+  bannerUrl   String?
+  isFinalized Boolean        @default(false)
+  venueId     String?
+  club        Club           @relation(fields: [clubId], references: [id])
+  registrations Registration[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Registration {
+  id        String   @id @default(uuid())
+  userId    String
+  eventId   String
+  status    String   @default("REGISTERED")
+  user      User     @relation(fields: [userId], references: [id])
+  event     Event    @relation(fields: [eventId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, eventId])
+}
+
+model Applicant {
+  id        String   @id @default(uuid())
+  clubId    String
+  name      String
+  email     String
+  status    String   @default("PENDING")
+  club      Club     @relation(fields: [clubId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  details   String?
+  userId    String?
+  timestamp DateTime @default(now())
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  clubId      String
+  title       String
+  description String?
+  date        DateTime
+  club        Club     @relation(fields: [clubId], references: [id])
+}
+
+model Venue {
+  id        String   @id @default(uuid())
+  name      String
+  capacity  Int
+  location  String
+  resources String?  // JSON or comma-separated
+}
+
+model Developer {
+  id          String   @id @default(uuid())
+  name        String
+  role        String
+  bio         String?
+  email       String?
+  linkedin    String?
+  github      String?
+  image       String?  // Base64 or URL
+  isLead      Boolean  @default(false)
+  education   String?  // JSON
+  experience  String?  // JSON
+  achievements String? // JSON
+}
+
+model Mentor {
+  id          String   @id @default(uuid())
+  name        String
+  designation String
+  image       String?
+  link        String?
+}
+
+model DevConfig {
+  id                 String @id @default("config")
+  developedUnderName String
+  developedUnderUrl  String
+  developedUnderLogo String?
+  authorizedEmails   String // JSON or comma-separated
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  type      String
+  timestamp DateTime @default(now())
+  read      Boolean  @default(false)
+  senderName String?
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  senderId    String
+  senderName  String
+  content     String?
+  timestamp   DateTime @default(now())
+  clubId      String?
+  recipientId String?
+  type        String   @default("text")
+  status      String   @default("sent")
+  mediaUrl    String?
+  latitude    Float?
+  longitude   Float?
+  pollQuestion String?
+  pollOptions  String? // JSON
+}
+
+model SavedEvent {
+  id        String   @id @default(uuid())
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+}

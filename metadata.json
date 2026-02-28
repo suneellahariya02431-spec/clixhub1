@@ -1,0 +1,7 @@
+{
+  "name": "CLIX (Club Lifecycle & eXperience)",
+  "description": "A comprehensive club lifecycle and experience platform for Madhav Institute of Technology & Science, Gwalior, featuring multi-role access, recruitment tracking, event management with UPI payments, and automated certificate generation.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
